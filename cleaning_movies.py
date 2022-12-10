@@ -2,9 +2,10 @@ import os
 import re
 import glob
 
-ROOT = r"\\horus\movies"
+ROOTS = {r"\\horus\tvshows", r"\\horus\cartoons", r"\\horus\movies"}
 LOG_FILE = "out.txt"
 TECH_WORDS = {
+    "proper",
     "multi",
     "1080p",
     "720p",
@@ -28,12 +29,22 @@ TECH_WORDS = {
     "french",
     "imax",
     "xvid",
+    "hdtv",
+    "576p",
+    "subfrench",
+    "hq",
+    "webdl",
+    "webdl1080p",
 }
 
 # get movies
-def get_movies(root):
-    path = os.path.join(root, f"\**\*.*")
-    return set(glob.glob(path, recursive=True))
+def get_movies(roots):
+    all_movies = set()
+    for root in roots:
+        path = os.path.join(root, f"\**\*.*")
+        movies = glob.glob(path, recursive=True)
+        all_movies.update(movies)
+    return all_movies
 
 
 # clean movie
@@ -54,7 +65,10 @@ def clean_movie(title: str):
         if word.lower() in TECH_WORDS:
             break
         else:
-            words2.append(word.capitalize())
+            if re.match("s\d+e\d+", word.lower()):
+                words2.append(word.upper())
+            else:
+                words2.append(word.capitalize())
 
     new_title = ".".join(words2) + "." + words[-1]
     new_title = re.sub("(\d{4})", "(\\1)", new_title)
@@ -69,7 +83,7 @@ def clean_movies(movies):
 def print_movies(old_movies, new_movies):
     with open(LOG_FILE, "w", encoding="utf-8") as out:
         for old, new in zip(old_movies, new_movies):
-            # out.write("\n" + old + "\n")
+            out.write("\n" + old + "\n")
             out.write(new + "\n")
 
 
@@ -85,7 +99,7 @@ def rename_movies(old_movies, new_movies):
 
 
 def main():
-    movies = get_movies(ROOT)
+    movies = get_movies(ROOTS)
     new_movies = clean_movies(movies)
     rename_movies(movies, new_movies)
     # print_movies(sorted(movies), sorted(new_movies))
