@@ -1,6 +1,5 @@
 import os
 import re
-import glob
 
 ROOTS = {r"\\horus\tvshows", r"\\horus\cartoons", r"\\horus\movies"}
 LOG_FILE = "out.txt"
@@ -32,6 +31,7 @@ TECH_WORDS = {
     "hdtv",
     "576p",
     "subfrench",
+    "truefrench",
     "hq",
     "webdl",
     "webdl1080p",
@@ -41,9 +41,9 @@ TECH_WORDS = {
 def get_movies(roots):
     all_movies = set()
     for root in roots:
-        path = os.path.join(root, f"\**\*.*")
-        movies = glob.glob(path, recursive=True)
-        all_movies.update(movies)
+        for rootdir, dirnames, filenames in os.walk(root):
+            filepath = [os.path.join(rootdir, filename) for filename in filenames]
+            all_movies.update(filepath)
     return all_movies
 
 
@@ -58,7 +58,7 @@ def clean_movie(title: str):
     base_name = re.sub("[()\s-]", ".", base_name)
     base_name = re.sub("\.{2,}", ".", base_name)
 
-    # remove title after tech words, keeping the extension
+    # remove remaining title after 1st tech word, keeping the extension
     words = base_name.split(".")
     words2 = []
     for idx, word in enumerate(words[:-1]):
@@ -71,7 +71,12 @@ def clean_movie(title: str):
                 words2.append(word.capitalize())
 
     new_title = ".".join(words2) + "." + words[-1]
+
+    # set dates between parentheses
     new_title = re.sub("(\d{4})", "(\\1)", new_title)
+
+    # remove fisrt dot
+    new_title = re.sub("^\.", "", new_title)
 
     return os.path.join(dir_name, new_title)
 
@@ -83,8 +88,9 @@ def clean_movies(movies):
 def print_movies(old_movies, new_movies):
     with open(LOG_FILE, "w", encoding="utf-8") as out:
         for old, new in zip(old_movies, new_movies):
-            out.write("\n" + old + "\n")
-            out.write(new + "\n")
+            if old != new:
+                out.write("\n" + old + "\n")
+                out.write(new + "\n" if old != new else "*** same ***\n")
 
 
 def rename_movies(old_movies, new_movies):
