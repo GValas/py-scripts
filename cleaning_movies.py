@@ -1,40 +1,39 @@
 import os
 import re
+import sys
 
-ROOTS = {r"\\horus\tvshows", r"\\horus\cartoons", r"\\horus\movies"}
-LOG_FILE = "out.txt"
 TECH_WORDS = {
-    "proper",
-    "multi",
     "1080p",
-    "720p",
-    "web",
-    "h264",
-    "french",
-    "bdrip",
-    "brrip",
-    "4k",
-    "vff",
     "2160p",
-    "hdr",
-    "dvdrip",
-    "bluray",
-    "dts",
-    "x264",
-    "ac3",
-    "hdlight",
-    "aac",
-    "divx",
-    "french",
-    "imax",
-    "xvid",
-    "hdtv",
+    "4k",
     "576p",
+    "720p",
+    "aac",
+    "ac3",
+    "bdrip",
+    "bluray",
+    "brrip",
+    "divx",
+    "dts",
+    "dvdrip",
+    "french",
+    "french",
+    "h264",
+    "hdlight",
+    "hdr",
+    "hdtv",
+    "hq",
+    "imax",
+    "multi",
+    "proper",
     "subfrench",
     "truefrench",
-    "hq",
+    "vff",
+    "web",
     "webdl",
     "webdl1080p",
+    "x264",
+    "xvid",
 }
 
 # get movies
@@ -86,11 +85,19 @@ def clean_movies(movies):
 
 
 def print_movies(old_movies, new_movies):
-    with open(LOG_FILE, "w", encoding="utf-8") as out:
-        for old, new in zip(old_movies, new_movies):
-            if old != new:
-                out.write("\n" + old + "\n")
-                out.write(new + "\n" if old != new else "*** same ***\n")
+    # log_file = os.path.join(os.path.realpath(__file__), "out.txt")
+    # with open(log_file, "w", encoding="utf-8") as out:
+    #     for old, new in zip(old_movies, new_movies):
+    #         if old != new:
+    #             print(old, new)
+    #             out.write("\n" + old + "\n")
+    #             out.write(new + "\n" if old != new else "*** same ***\n")
+
+    for old, new in zip(old_movies, new_movies):
+        if old != new:
+            print(old)
+            print(new if old != new else "*** same ***")
+            print()
 
 
 def rename_movies(old_movies, new_movies):
@@ -100,13 +107,27 @@ def rename_movies(old_movies, new_movies):
                 os.rename(old, new)
             except:
                 print("--- error ---")
-                print(old)
-                print(new)
+
+            print(f"{old} >>> {new}")
 
 
 def main():
-    movies = get_movies(ROOTS)
+
+    # managing script input
+    if len(sys.argv) != 2:
+        print("Invalid arguments")
+        exit(0)
+
+    # root folders
+    roots = set(sys.argv[1].split(";"))
+    print("Cleaning movies of ...")
+    print(roots)
+
+    # former and new files
+    movies = get_movies(roots)
     new_movies = clean_movies(movies)
+
+    # renaming
     rename_movies(movies, new_movies)
     # print_movies(sorted(movies), sorted(new_movies))
 
