@@ -72,7 +72,7 @@ def clean_movie(title: str):
     new_title = ".".join(words2) + "." + words[-1]
 
     # set dates between parentheses
-    new_title = re.sub("(\d{4})", "(\\1)", new_title)
+    new_title = re.sub("\b(\d{4})\b", "(\\1)", new_title)
 
     # remove fisrt dot
     new_title = re.sub("^\.", "", new_title)
