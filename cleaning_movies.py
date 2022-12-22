@@ -54,8 +54,8 @@ def clean_movie(title: str):
     base_name = os.path.basename(title)
 
     # remove useless characters
-    base_name = re.sub("[()\s-]", ".", base_name)
-    base_name = re.sub("\.{2,}", ".", base_name)
+    base_name = re.sub(r"[()\s-]", ".", base_name)
+    base_name = re.sub(r"\.{2,}", ".", base_name)
 
     # remove remaining title after 1st tech word, keeping the extension
     words = base_name.split(".")
@@ -72,10 +72,10 @@ def clean_movie(title: str):
     new_title = ".".join(words2) + "." + words[-1]
 
     # set dates between parentheses
-    new_title = re.sub("\b(\d{4})\b", "(\\1)", new_title)
+    new_title = re.sub(r"\b(\d{4})\b", "(\\1)", new_title)
 
     # remove fisrt dot
-    new_title = re.sub("^\.", "", new_title)
+    new_title = re.sub(r"^\.", "", new_title)
 
     return os.path.join(dir_name, new_title)
 
