@@ -16,7 +16,7 @@ TECH_WORDS = {
     "divx",
     "dts",
     "dvdrip",
-    "french",
+    "fastsub",
     "french",
     "h264",
     "hdlight",
@@ -25,29 +25,65 @@ TECH_WORDS = {
     "hq",
     "imax",
     "multi",
+    "multitruefrench",
     "proper",
+    "repack",
     "subfrench",
     "truefrench",
     "vff",
+    "vostfr",
     "web",
     "webdl",
     "webdl1080p",
+    "webrip",
     "x264",
     "xvid",
 }
 
-# get movies
-def get_movies(roots):
-    all_movies = set()
+# get movies dirs
+def get_movies_dirs(roots):
+    alls = set()
+    for root in roots:
+        for rootdir, dirnames, filenames in os.walk(root):
+            dir = [os.path.join(rootdir, dir) for dir in dirnames]
+            alls.update(dir)
+    return alls
+
+
+# get movies titles
+def get_movies_titles(roots):
+    alls = set()
     for root in roots:
         for rootdir, dirnames, filenames in os.walk(root):
             filepath = [os.path.join(rootdir, filename) for filename in filenames]
-            all_movies.update(filepath)
-    return all_movies
+            alls.update(filepath)
+    return alls
 
 
-# clean movie
-def clean_movie(title: str):
+# clean movie dir
+def clean_movies_dir(dir: str):
+
+    # split dir and base names
+    dir_name = os.path.dirname(dir)
+    base_name = os.path.basename(dir)
+
+    # remove useless characters
+    base_name = re.sub(r"[()\s-]", ".", base_name)
+    base_name = re.sub(r"\.{2,}", ".", base_name)
+
+    # capitalize tokens
+    words = base_name.split(".")
+    words = [word.capitalize() for word in words]
+    base_name = ".".join(words)
+
+    # remove fisrt dot
+    base_name = re.sub(r"^\.", "", base_name)
+
+    return os.path.join(dir_name, base_name)
+
+
+# clean movie title
+def clean_movie_title(title: str):
 
     # split dir and base names
     dir_name = os.path.dirname(title)
@@ -80,8 +116,12 @@ def clean_movie(title: str):
     return os.path.join(dir_name, new_title)
 
 
-def clean_movies(movies):
-    return [clean_movie(movie) for movie in movies]
+def clean_movies_dirs(dirs):
+    return [clean_movies_dir(dir) for dir in dirs]
+
+
+def clean_movies_titles(titles):
+    return [clean_movie_title(title) for title in titles]
 
 
 def print_movies(old_movies, new_movies):
@@ -92,6 +132,9 @@ def print_movies(old_movies, new_movies):
     #             print(old, new)
     #             out.write("\n" + old + "\n")
     #             out.write(new + "\n" if old != new else "*** same ***\n")
+
+    # co sorting lists
+    old_movies, new_movies = zip(*sorted(zip(old_movies, new_movies)))
 
     for old, new in zip(old_movies, new_movies):
         if old != new:
@@ -118,18 +161,22 @@ def main():
         print("Invalid arguments")
         exit(0)
 
-    # root folders
+    # root dirs
     roots = set(sys.argv[1].split(";"))
     print("Cleaning movies of ...")
     print(roots)
 
-    # former and new files
-    movies = get_movies(roots)
-    new_movies = clean_movies(movies)
+    # cleaning & renaming dirs
+    olds = get_movies_dirs(roots)
+    news = clean_movies_dirs(olds)
+    rename_movies(olds, news)
+    # print_movies(olds, news)
 
-    # renaming
-    rename_movies(movies, new_movies)
-    # print_movies(sorted(movies), sorted(new_movies))
+    # cleaning & renaming titles
+    olds = get_movies_titles(roots)
+    news = clean_movies_titles(olds)
+    rename_movies(olds, news)
+    # print_movies(olds, news)
 
 
 if __name__ == "__main__":
