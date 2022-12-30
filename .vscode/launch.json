@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["/mnt/user/tvshows;/mnt/user/cartoons;/mnt/user/movies"]
+            "args": ["\\\\horus\\tvshows;\\\\horus\\cartoons;\\\\horus\\movies"]
         }
     ]
 }
